@@ -10,14 +10,14 @@ node_modules
 /dist
 
 # keys
-/templates/react/neardev
+/neardev
 
 # testing
 /coverage
 
 # production
 /build
-/target
+*/target
 
 # misc
 .DS_Store
@@ -31,4 +31,4 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-pass_phrase
+pass_phrase*
