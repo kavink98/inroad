@@ -16,21 +16,37 @@ pub struct Bid {
 pub struct BiddingContract {
     bids: UnorderedMap<AccountId, Bid>,
     winning_bidder: Option<AccountId>,
+    is_bid_selected: bool,
+    owner: AccountId
 }
 
 impl Default for BiddingContract {
     fn default() -> Self {
         Self {
-            bids: UnorderedMap::new(b"b".to_vec()),
+            bids: UnorderedMap::new(b"bids".to_vec()),
             winning_bidder: None,
+            is_bid_selected: false,
+            owner: env::current_account_id()
         }
     }
 }
 
 #[near_bindgen]
 impl BiddingContract {
+
+    #[init]
+    fn init(caller: AccountId) -> Self {
+        Self {
+            bids: UnorderedMap::new(b"bids".to_vec()),
+            winning_bidder: None,
+            is_bid_selected: false,
+            owner: caller
+        }
+    }
+
     // Function to place a bid
     pub fn place_bid(&mut self, price: u64, bidder_name: String, database_hash: String) {
+        assert!(!(self.is_bid_selected), "This tender is now closed");
         let bidder = env::signer_account_id();
         let new_bid = Bid {
             bidder_name,
@@ -52,6 +68,7 @@ impl BiddingContract {
 
     // Function to choose the winning bidder
     pub fn choose_winner(&mut self, bidder: AccountId) {
+        assert!(!(self.is_bid_selected), "TBid had already been selected");
         self.winning_bidder = Some(bidder);
     }
 

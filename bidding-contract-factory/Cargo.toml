@@ -1,11 +1,13 @@
 [package]
-name = "bidding_contract"
+name = "tender_bidding_factory"
 version = "1.0.0"
-authors = ["Near Inc <hello@near.org>"]
+authors = ["Kavin", "Namit"]
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib"]
+name = "tender_bidding_factory"
+path = "src/factory.rs"
 
 [dependencies]
 near-sdk = "4.0.0"
