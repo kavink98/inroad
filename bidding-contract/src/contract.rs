@@ -33,9 +33,9 @@ impl Default for BiddingContract {
 
 #[near_bindgen]
 impl BiddingContract {
-
+    #[private]
     #[init]
-    fn init(caller: AccountId) -> Self {
+    pub fn init(caller: AccountId) -> Self {
         Self {
             bids: UnorderedMap::new(b"bids".to_vec()),
             winning_bidder: None,
@@ -68,7 +68,7 @@ impl BiddingContract {
 
     // Function to choose the winning bidder
     pub fn choose_winner(&mut self, bidder: AccountId) {
-        assert!(!(self.is_bid_selected), "TBid had already been selected");
+        assert!(!(self.is_bid_selected), "Bid had already been selected");
         self.winning_bidder = Some(bidder);
     }
 
