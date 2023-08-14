@@ -45,8 +45,6 @@ impl BiddingContractFactory {
             "Invalid subaccount"
         );
 
-        log!("We're Here!");
-
         // Assert enough money is attached to create the account and deploy the contract
         let attached = env::attached_deposit();
         let code = self.code.clone();
@@ -57,12 +55,11 @@ impl BiddingContractFactory {
             "Attach at least {} yⓃ",
             minimum_needed
         );
-        let init_args = current_account.try_to_vec().unwrap();
+        let init_args = near_sdk::serde_json::to_vec(&current_account).unwrap();
         let mut promise = Promise::new(subaccount.clone())
             .create_account()
             .transfer(attached)
-            .deploy_contract(code)
-            .function_call("init".to_owned(), init_args, NO_DEPOSIT, TGAS );
+            .deploy_contract(code);
 
         // Add full access key if the user passes one
         if let Some(pk) = public_key {
