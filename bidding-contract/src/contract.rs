@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use near_sdk::collections::{UnorderedMap, Vector};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::{env, near_bindgen, AccountId};
+use near_sdk::{env, near_bindgen, ext_contract, AccountId};
 use near_sdk::serde::{Serialize, Deserialize};
 
 macro_rules! assert_contract_state {
@@ -20,7 +20,7 @@ macro_rules! assert_permitted_role {
     };
 }
 
-#[ext_contract(ext_allowlist)]
+#[ext_contract(main_contract)]
 pub trait ExtAllowlist {
     fn is_allowlisted_bidding(account_id: AccountId) -> bool;
     fn is_allowlisted_testing(account_id: AccountId) -> bool;
