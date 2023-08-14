@@ -6,10 +6,10 @@ use near_sdk::{env, near_bindgen, AccountId};
 use near_sdk::serde::{Serialize, Deserialize};
 
 macro_rules! assert_contract_state {
-    ($state:expr, $expected:expr) => {
+    ($state:expr, $expected:path, $message:expr) => {
         assert!(
             matches!($state, $expected),
-            concat!("Invalid contract state: ", stringify!($expected))
+            concat!("Invalid contract state: ", $message)
         );
     };
 }
@@ -47,9 +47,9 @@ pub struct Comment {
 
 #[derive(BorshDeserialize, BorshSerialize)]
 enum ContractState {
-    Bidding,
-    Survey,
     Disabled,
+    Survey,
+    Bidding,
     Construction,
     Completed,
 }
@@ -94,9 +94,11 @@ impl BiddingContract {
         }
     }
 
+
+
     // Function to place a bid
     pub fn place_bid(&mut self, price: u64, bidder_name: String, database_hash: String) {
-        assert!(matches!(self.state, ContractState::Bidding), "Not open for bids currently");
+        assert_contract_state!(self.state, ContractState::Bidding, "Contract is not open for bidding");
         let bidder = env::signer_account_id();
         let new_bid = Bid {
             bidder_name,
@@ -130,6 +132,10 @@ impl BiddingContract {
             None => None,
         }
     }
+}
+
+#[near_bindgen]
+impl BiddingContract{
 
     // Function to get the public comments for the project
     pub fn place_comments(&mut self, thumbs_up: bool, message: String) {
@@ -145,6 +151,10 @@ impl BiddingContract {
     pub fn view_comments(&self) -> Vec<Comment> {
         self.comments.to_vec()
     }
+}
+
+#[near_bindgen]
+impl BiddingContract{
 
     pub fn set_state_to_bid(&mut self) {
         assert_permitted_role!(self, only_owner());
@@ -155,7 +165,10 @@ impl BiddingContract {
         assert_permitted_role!(self, only_owner());
         self.state = ContractState::Disabled; 
     }
+}
 
+#[near_bindgen]
+impl BiddingContract{
     pub fn update_milestone(&mut self, name: String, database_hash: String) {
         assert_permitted_role!(self, only_winner());
 
@@ -173,6 +186,10 @@ impl BiddingContract {
     pub fn view_milestones(&self) -> Vec<(String, Milestone)> {
         self.milestones.to_vec()
     }
+}
+
+#[near_bindgen]
+impl BiddingContract{
 
     #[private]
     pub fn insert_map_into_unordered_map(&mut self, map_arg: HashMap<String, Milestone>) {
@@ -193,5 +210,4 @@ impl BiddingContract {
         }
         false
     }
-
 }
