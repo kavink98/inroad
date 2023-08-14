@@ -20,6 +20,13 @@ macro_rules! assert_permitted_role {
     };
 }
 
+#[ext_contract(ext_allowlist)]
+pub trait ExtAllowlist {
+    fn is_allowlisted_bidding(account_id: AccountId) -> bool;
+    fn is_allowlisted_testing(account_id: AccountId) -> bool;
+}
+
+
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Bid {
@@ -37,6 +44,15 @@ pub struct Milestone {
     database_hash: Option<String>
 }
 
+
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct Test {
+    description: String,
+    success: bool,
+    database_hash: Option<String>, 
+}
+
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Comment {
@@ -50,7 +66,11 @@ enum ContractState {
     Disabled,
     Survey,
     Bidding,
+    Selected,
     Construction,
+    Inspection,
+    PreCompleted,
+    Testing,
     Completed,
 }
 
@@ -62,7 +82,8 @@ pub struct BiddingContract {
     owner: AccountId,
     state: ContractState,
     comments: Vector<Comment>,
-    milestones: UnorderedMap<String, Milestone>
+    milestones: UnorderedMap<String, Milestone>,
+    tests: UnorderedMap<String, Test>,
 }
 
 impl Default for BiddingContract {
@@ -73,7 +94,8 @@ impl Default for BiddingContract {
             owner: env::current_account_id(),
             state: ContractState::Survey,
             comments: Vector::new(b"comments".to_vec()),    
-            milestones: UnorderedMap::new(b"milestone".to_vec())       
+            milestones: UnorderedMap::new(b"milestone".to_vec()),
+            tests: UnorderedMap::new(b"test".to_vec()),  
         }
     }
 }
@@ -81,7 +103,6 @@ impl Default for BiddingContract {
 #[near_bindgen]
 impl BiddingContract {
 
-    #[private]
     #[init]
     pub fn init(caller: AccountId) -> Self {
         Self {
@@ -90,8 +111,13 @@ impl BiddingContract {
             owner: caller,
             state: ContractState::Survey,
             comments: Vector::new(b"comments".to_vec()),    
-            milestones: UnorderedMap::new(b"milestone".to_vec())       
+            milestones: UnorderedMap::new(b"milestone".to_vec()),
+            tests: UnorderedMap::new(b"test".to_vec()),    
         }
+    }
+
+    pub fn view_owner(&self) -> &AccountId {
+        &self.owner
     }
 
 
@@ -118,12 +144,12 @@ impl BiddingContract {
         self.bids.get(&bidder)
     }
 
-    pub fn choose_winner(&mut self, bidder: AccountId, milestones: HashMap<String, Milestone>) {
+    pub fn choose_winner(&mut self, bidder: AccountId, milestones: HashMap<String, Milestone>, _tests: HashMap<String, Test>) {
         assert!(matches!(self.state, ContractState::Bidding), "No tender exists yet or tender has been closed");
         assert_permitted_role!(self, only_owner());
         self.winning_bidder = Some(bidder);
         self.insert_map_into_unordered_map(milestones);
-        self.state = ContractState::Construction;
+        self.state = ContractState::Selected;
     }
  
     pub fn get_winner(&self) -> Option<Bid> {
@@ -156,14 +182,33 @@ impl BiddingContract{
 #[near_bindgen]
 impl BiddingContract{
 
+    pub fn set_state_to_disabled(&mut self) {
+        assert_permitted_role!(self, only_owner());
+        self.state = ContractState::Disabled; 
+    }
+
     pub fn set_state_to_bid(&mut self) {
+        assert_contract_state!(self.state, ContractState::Survey, "State has to be survey in order to move to bidding");
         assert_permitted_role!(self, only_owner());
         self.state = ContractState::Bidding; 
     }
 
-    pub fn set_state_to_disabled(&mut self) {
+    pub fn set_state_to_construction(&mut self) {
+        assert_contract_state!(self.state, ContractState::Selected, "State has to be selected in order to move to construction");
         assert_permitted_role!(self, only_owner());
-        self.state = ContractState::Disabled; 
+        self.state = ContractState::Construction
+    }
+
+    pub fn set_state_to_precompleted(&mut self) {
+        assert_contract_state!(self.state, ContractState::Construction, "State has to be in construction in order to move to precompleted");
+        assert_permitted_role!(self, only_winner());
+        self.state = ContractState::PreCompleted;
+    }
+
+    pub fn set_state_to_testing(&mut self) {
+        assert_contract_state!(self.state, ContractState::PreCompleted, "State has to be in precompleted in order to move to completed");
+        assert_permitted_role!(self, only_owner());
+        self.state = ContractState::Testing;
     }
 }
 
@@ -173,7 +218,7 @@ impl BiddingContract{
         assert_permitted_role!(self, only_winner());
 
         let mut milestone = self.milestones.get(&name).expect("Milestone not found");
-        assert!(milestone.database_hash.is_some(), "Milestone already achieved");
+        assert!(milestone.database_hash.is_none() && milestone.completion_date.is_none(), "Milestone already achieved");
 
         let current_block_timestamp = env::block_timestamp();
 
@@ -210,4 +255,6 @@ impl BiddingContract{
         }
         false
     }
+
+
 }
