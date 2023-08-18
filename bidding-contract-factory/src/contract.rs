@@ -120,6 +120,7 @@ impl MainContract {
     ) -> bool {
         if let Ok(_result) = create_deploy_result {
             log!(format!("Correctly created and deployed to {account}"));
+            self.bidding_contracts.push(&account);
             return true;
         };
 

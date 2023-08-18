@@ -1,12 +1,12 @@
 [package]
-name = "main_contract"
+name = "test_contract"
 version = "1.0.0"
 authors = ["Kavin", "Namit"]
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib"]
-name = "main_contract"
+name = "test_contract"
 path = "src/contract.rs"
 
 [dependencies]
