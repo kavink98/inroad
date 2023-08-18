@@ -55,6 +55,10 @@ impl MainContract {
     pub fn is_in_testing_list(&self, account_id: AccountId) -> bool {
         self.testing_list.get(&account_id).is_some()
     }
+
+    pub fn view_contracts(&self) -> Vec<AccountId> {
+        self.bidding_contracts.to_vec()
+    }
 }
 
 #[near_bindgen]
