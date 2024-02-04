@@ -1,7 +1,0 @@
-{
-    "rust-analyzer.linkedProjects": [
-        "./bidding-contract/Cargo.toml",
-        "./bidding-contract-factory/Cargo.toml",
-        "./test/Cargo.toml"
-    ]
-}
