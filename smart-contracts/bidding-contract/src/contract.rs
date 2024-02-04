@@ -271,6 +271,20 @@ impl BiddingContract {
         assert_permitted_role!(self, only_owner());
         self.state = ContractState::Testing;
     }
+
+    pub fn view_state(&self) -> &'static str {
+        match self.state {
+            ContractState::Disabled => "Disabled",
+            ContractState::Survey => "Survey",
+            ContractState::Bidding => "Bidding",
+            ContractState::Selected => "Selected",
+            ContractState::Construction => "Construction",
+            ContractState::Inspection => "Inspection",
+            ContractState::PreCompleted => "PreCompleted",
+            ContractState::Testing => "Testing",
+            ContractState::Completed => "Completed",
+        }
+    }
 }
 
 #[near_bindgen]
@@ -299,7 +313,6 @@ impl BiddingContract {
 
 #[near_bindgen]
 impl BiddingContract {
-    #[private]
     pub fn insert_map_into_unordered_map(&mut self, map_arg: HashMap<String, Milestone>) {
         for (key, value) in map_arg {
             self.milestones.insert(&key, &value);
