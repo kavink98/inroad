@@ -1,15 +1,14 @@
 [package]
-name = "main_contract"
+name = "project-factory"
 version = "1.0.0"
 authors = ["Kavin", "Namit"]
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib"]
-name = "main_contract"
+name = "project_factory"
 path = "src/contract.rs"
 
 [dependencies]
 near-sdk = "4.1.1"
 uint = { version = "0.9.3", default-features = false }
-

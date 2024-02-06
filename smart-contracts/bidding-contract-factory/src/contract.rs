@@ -28,7 +28,8 @@ impl Default for MainContract {
     fn default() -> Self {
         Self {
             bidding_contracts: Vector::new(b"contract".to_vec()),
-            code: include_bytes!("../build/tender_bidding.wasm").to_vec(),
+            code: include_bytes!("../../target/wasm32-unknown-unknown/release/project.wasm")
+                .to_vec(),
             bidding_list: UnorderedMap::new(b"bid".to_vec()),
             testing_list: UnorderedMap::new(b"test".to_vec()),
         }

@@ -1,8 +1,5 @@
 [workspace]
-members = [
-    "bidding-contract",
-    "bidding-contract-factory"
-]
+members = ["project", "project-factory"]
 resolver = "2"
 
 [profile.release]
