@@ -13,6 +13,7 @@
     "@mantine/core": "^7.5.1",
     "@mantine/hooks": "^7.5.1",
     "@near-wallet-selector/core": "^8.9.3",
+    "@near-wallet-selector/modal-ui": "^8.9.3",
     "@near-wallet-selector/my-near-wallet": "^8.9.3",
     "@near-wallet-selector/near-wallet": "^8.9.3",
     "react": "^18.2.0",
