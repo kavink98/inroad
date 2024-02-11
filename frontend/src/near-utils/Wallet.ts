@@ -13,12 +13,13 @@ import { setupModal } from "@near-wallet-selector/modal-ui";
 type undefinedFunc = undefined | (() => void);
 
 type Wallet = {
+  selector: WalletSelector | undefined;
   signedAccountId: String;
   logOut: undefinedFunc;
   logIn: undefinedFunc;
-  selector: WalletSelector | undefined;
   viewMethod: undefinedFunc;
   callMethod: undefinedFunc;
+
   // TODO: Better type defs for function params
   setLogActions: (a: any) => void;
   setAuth: (a: any) => void;
@@ -64,6 +65,15 @@ export function useInitWallet({
     };
     setUpAndSetSelector();
   }, [networkId, setStoreSelector]);
+
+  useEffect(() => {
+    if (!selector) return;
+
+    const accounts = selector.store.getState().accounts;
+    const signedAccountId =
+      accounts.find((account) => account.active)?.accountId || "";
+    setAuth({ signedAccountId });
+  }, [selector, setAuth]);
 
   useEffect(() => {
     if (!selector) return;
