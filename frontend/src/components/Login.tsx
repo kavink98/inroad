@@ -1,29 +1,30 @@
 import "@near-wallet-selector/modal-ui/styles.css";
-import { Button, Text } from "@mantine/core";
-import { setupWalletSelector } from "@near-wallet-selector/core";
-import { setupModal } from "@near-wallet-selector/modal-ui";
-import { setupNearWallet } from "@near-wallet-selector/near-wallet";
-import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
+import { Button } from "@mantine/core";
+import { useWallet } from "../near-utils/Wallet";
+import { MouseEventHandler, useEffect, useState } from "react";
 
 const Login = () => {
-  const signIn = async () => {
-    const selector = await setupWalletSelector({
-      network: "testnet",
-      modules: [setupNearWallet(), setupMyNearWallet()],
-    });
+  const { logIn, logOut, signedAccountId } = useWallet();
+  const [label, setLabel] = useState<string>();
+  const [action, setAction] = useState<
+    MouseEventHandler<HTMLButtonElement> | undefined
+  >(() => {});
 
-    const modal = setupModal(selector, { contractId: "test.testnet" });
-
-    modal.show();
-  };
+  useEffect(() => {
+    if (signedAccountId) {
+      setAction(() => logOut);
+      setLabel(`Logout ${signedAccountId}`);
+    } else {
+      setAction(() => logIn);
+      setLabel("Login");
+    }
+  }, [signedAccountId, logOut, logIn, setAction, setLabel]);
 
   return (
     <>
-      <Text>
-        Please log in to your NEAR account to be able to interact with smart
-        contract beyond read only methods
-      </Text>
-      <Button onClick={signIn}>Sign In</Button>
+      <Button onClick={action} variant="transparent">
+        {label}
+      </Button>
     </>
   );
 };
