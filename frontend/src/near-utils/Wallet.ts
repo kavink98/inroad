@@ -16,7 +16,7 @@ type ViewMethod = undefined | ((contractId: string, method: string, args?: {}) =
 
 type Wallet = {
   selector: WalletSelector | undefined;
-  signedAccountId: String;
+  signedAccountId: string;
   logOut: LogFunctions;
   logIn: LogFunctions;
   viewMethod: ViewMethod;
