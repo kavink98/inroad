@@ -3,7 +3,14 @@ import Login from "./Login";
 
 const TopNavBar = () => {
   return (
-    <Group justify="flex-end" pos={"absolute"} top={0} w={"50%"} p={0}>
+    <Group
+      justify="flex-end"
+      pos={"absolute"}
+      top={0}
+      left={0}
+      right={0}
+      m={"md"}
+    >
       <Login />
     </Group>
   );
