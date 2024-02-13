@@ -3,22 +3,24 @@ import {
   WalletSelector,
   setupWalletSelector,
 } from "@near-wallet-selector/core";
+import { setupModal } from "@near-wallet-selector/modal-ui";
 import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
-import { create } from "zustand";
 import { providers, utils } from "near-api-js";
 import { CodeResult } from "near-api-js/lib/providers/provider";
 import { useEffect, useState } from "react";
-import { setupModal } from "@near-wallet-selector/modal-ui";
+import { create } from "zustand";
 
-type undefinedFunc = undefined | (() => void);
+type LogFunctions = undefined | (() => void);
+type CallMethod = undefined | ((contractId: string, method: string, args?: {}, gas?: string, deposit?: number) => Promise<any>)
+type ViewMethod = undefined | ((contractId: string, method: string, args?: {}) => Promise<any>)
 
 type Wallet = {
   selector: WalletSelector | undefined;
   signedAccountId: String;
-  logOut: undefinedFunc;
-  logIn: undefinedFunc;
-  viewMethod: undefinedFunc;
-  callMethod: undefinedFunc;
+  logOut: LogFunctions;
+  logIn: LogFunctions;
+  viewMethod: ViewMethod;
+  callMethod: CallMethod;
 
   // TODO: Better type defs for function params
   setLogActions: (a: any) => void;
