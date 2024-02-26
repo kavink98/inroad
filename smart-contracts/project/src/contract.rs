@@ -92,6 +92,7 @@ enum ContractState {
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct BiddingContract {
+    name: String,
     bids: UnorderedMap<AccountId, Bid>,
     winning_bidder: Option<AccountId>,
     owner: AccountId,
@@ -104,6 +105,7 @@ pub struct BiddingContract {
 impl Default for BiddingContract {
     fn default() -> Self {
         Self {
+            name: String :: from("Unnamed Project"),
             bids: UnorderedMap::new(b"bids".to_vec()),
             winning_bidder: None,
             owner: env::current_account_id(),
@@ -118,8 +120,9 @@ impl Default for BiddingContract {
 #[near_bindgen]
 impl BiddingContract {
     #[init]
-    pub fn init(caller: AccountId) -> Self {
+    pub fn init(caller: AccountId, name: String) -> Self {
         Self {
+            name,
             bids: UnorderedMap::new(b"bids".to_vec()),
             winning_bidder: None,
             owner: caller,

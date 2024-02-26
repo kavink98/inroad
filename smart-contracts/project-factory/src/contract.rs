@@ -18,7 +18,7 @@ pub struct ContractInitArgs {
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct MainContract {
-    bidding_contracts: Vector<(String, AccountId)>,
+    bidding_contracts: Vector<AccountId>,
     code: Vec<u8>,
     bidding_list: UnorderedMap<AccountId, bool>,
     testing_list: UnorderedMap<AccountId, bool>,
@@ -55,7 +55,7 @@ impl MainContract {
         self.testing_list.get(&account_id).is_some()
     }
 
-    pub fn view_contracts(&self) -> Vec<(String, AccountId)> {
+    pub fn view_contracts(&self) -> Vec<AccountId> {
         self.bidding_contracts.to_vec()
     }
 }
@@ -67,7 +67,6 @@ impl MainContract {
     pub fn create_factory_subaccount_and_deploy(
         &mut self,
         project_id: String,
-        project_name: String,
         _description: String,
         public_key: Option<PublicKey>,
     ) -> Promise {
@@ -90,10 +89,13 @@ impl MainContract {
             "Attach at least {} yⓃ",
             minimum_needed
         );
-        let init_args = near_sdk::serde_json::to_vec(&ContractInitArgs {
+
+        let init_args = match near_sdk::serde_json::to_vec(&ContractInitArgs {
             caller: current_account,
-        })
-        .unwrap();
+        }) {
+            Ok(args) => args,
+            Err(e) => env :: panic_str(&format!("Error creating initial arguments for contract creation due to error: {}", e)),
+        };
         let mut promise = Promise::new(subaccount.clone())
             .create_account()
             .transfer(attached)
@@ -109,7 +111,6 @@ impl MainContract {
             Self::ext(env::current_account_id()).create_factory_subaccount_and_deploy_callback(
                 subaccount,
                 env::predecessor_account_id(),
-                project_name,
                 attached,
             ),
         )
@@ -120,13 +121,12 @@ impl MainContract {
         &mut self,
         account: AccountId,
         user: AccountId,
-        project_name: String,
         attached: Balance,
         #[callback_result] create_deploy_result: Result<(), PromiseError>,
     ) -> bool {
         if let Ok(_result) = create_deploy_result {
             log!(format!("Correctly created and deployed to {account}"));
-            self.bidding_contracts.push(&(project_name, account));
+            self.bidding_contracts.push(&account);
             return true;
         };
 
